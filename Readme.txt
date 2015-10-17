@@ -19,3 +19,7 @@ RUN
     It will show the detection results as
     [Detetion_Results(0/1) Segment_Start_Time(in seconds) Segment_End_Time(in Seconds)]
     It will also dump this output in a file. Change Output type or form as needed. 
+
+
+
+    Due to some changes in the training/test the latency has increased a little bit. But it should be good enough for Demo
