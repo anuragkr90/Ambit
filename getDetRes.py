@@ -48,7 +48,8 @@ def doDet(fileIn):
     if len(segChunks.shape) == 1:
         segChunks = np.reshape(segChunks,1,segChunks.reshape[0])
         
-    allOut = np.zeros((segChunks.shape[0],1))
+    #allOut = np.zeros((segChunks.shape[0],1))
+    allFeats = np.zeros((segChunks.shape[0],nComp))
     #print allOut.shape
     for t in range(segChunks.shape[0]):
         seg = segChunks[t,:]
@@ -64,35 +65,35 @@ def doDet(fileIn):
         hist = np.sum(cdist,axis=0)
         histfeat = hist/float(hist.shape[0])
         histfeat = histfeat.reshape(1,histfeat.shape[0])
+        allFeats[t,:] = histfeat
         
-        histKer = computeKernel(histfeat,trdata,1.0)
-        kerId = np.arange(histfeat.shape[0])+1
-        kerId = np.reshape(kerId,(kerId.shape[0],1))
-        teKer = np.hstack((kerId,histKer))
-        teKer = map(list,teKer)
-        telax = [0]*len(teKer)
-        plb,acc,probab = svm_predict(telax,teKer,svmMod,'-b 1 -q')
-        
-        
-        lbs = svmMod.get_labels()
-        #print str(probab) + str(lbs)
-        probab = np.array(probab)
-        if lbs[0] == 1:
-            prob_f=probab[:,0]
-        elif lbs[1] == 1:
-            prob_f=probab[:,1]
-        else:
-            print 'Not possible'
-            sys.exit()
+    histKer = computeKernel(allFeats,trdata,1.0)
+    kerId = np.arange(histKer.shape[0])+1
+    kerId = np.reshape(kerId,(kerId.shape[0],1))
+    teKer = map(list,np.hstack((kerId,histKer)))
+    telax = [0]*len(teKer)
+    plb,acc,probab = svm_predict(telax,teKer,svmMod,'-b 1 -q')
+            
+    lbs = svmMod.get_labels()
+    #print str(probab) + str(lbs)
+    probab = np.array(probab)
+    if lbs[0] == 1:
+        prob_f=probab[:,0]
+    elif lbs[1] == 1:
+        prob_f=probab[:,1]
+    else:
+        print 'Not possible'
+        sys.exit()
 
-        if pOrc == 1:
-            allOut[t,0] = prob_f
-        elif pOrc == 0:
-            allOut[t,0] = int(prob_f > opPoint)
-    #print np.hstack((allOut,segTimes))
-    np.savetxt(fileIn.rstrip('.wav')+'_res'+'.txt',allOut)
-    return np.hstack((allOut,segTimes))
-                 
+    prob_f.reshape(prob_f.shape[0],1)
+    if pOrc == 1:
+        allOut = prob_f
+    elif pOrc == 0:
+        allOut = np.array(map(int,(prob_f > opPoint))).reshape(prob_f.shape[0],1)
+        #print np.hstack((allOut,segTimes))
+        np.savetxt(fileIn.rstrip('.wav')+'_res'+'.txt',allOut)
+        return np.hstack((allOut,segTimes))
+            
     
 if __name__ == "__main__":
     res=doDet(sys.argv[1])
