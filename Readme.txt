@@ -22,4 +22,4 @@ RUN
 
 
 
-    Due to some changes in the training/test the latency has increased a little bit. But it should be good enough for Demo
+    Due to some changes in the training/test the processing time has increased a little bit. But it should be good enough for Demo
